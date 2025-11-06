@@ -1,5 +1,5 @@
-// NASA Space Explorer App - JSON Edition
-// Uses classroom JSON feed (no API key required)
+// NASA Space Explorer App
+// Uses class-provided JSON feed (no API key)
 
 const gallery = document.getElementById("gallery");
 const btn = document.getElementById("getImageBtn");
@@ -8,7 +8,7 @@ const endDate = document.getElementById("endDate");
 
 const apodData = "https://cdn.jsdelivr.net/gh/GCA-Classroom/apod/data.json";
 
-// 💫 Random Fact (LevelUp)
+// Random Fact
 const facts = [
   "Venus spins backward compared to most planets.",
   "One day on Mercury lasts 1,408 hours.",
@@ -26,7 +26,7 @@ document.querySelector(".filters").insertAdjacentHTML(
   }</p></div>`
 );
 
-// 🌌 Modal Setup
+// Modal
 const modal = document.createElement("div");
 modal.className = "modal";
 modal.innerHTML = `
@@ -39,12 +39,11 @@ modal.innerHTML = `
   </div>
 `;
 document.body.appendChild(modal);
-
 const closeModal = () => (modal.style.display = "none");
 modal.querySelector(".close-btn").addEventListener("click", closeModal);
 window.addEventListener("click", e => { if (e.target === modal) closeModal(); });
 
-// 🚀 Fetch NASA JSON Data
+// Fetch Data
 btn.addEventListener("click", async () => {
   gallery.innerHTML = `<div class="placeholder"><p>🔄 Loading space photos...</p></div>`;
 
@@ -55,7 +54,7 @@ btn.addEventListener("click", async () => {
     const start = new Date(startDate.value);
     const end = new Date(endDate.value);
 
-    // Filter data by date range, show max 9
+    // Filter data
     const filtered = data.filter(item => {
       const d = new Date(item.date);
       return d >= start && d <= end;
@@ -64,7 +63,7 @@ btn.addEventListener("click", async () => {
     gallery.innerHTML = "";
 
     if (filtered.length === 0) {
-      gallery.innerHTML = `<p>No results for that date range. Try a wider range.</p>`;
+      gallery.innerHTML = `<p>No results for that date range. Try again.</p>`;
       return;
     }
 
@@ -72,16 +71,11 @@ btn.addEventListener("click", async () => {
       const card = document.createElement("div");
       card.className = "gallery-item";
 
-      let media = "";
-      if (item.media_type === "video") {
-        if (item.thumbnail_url) {
-          media = `<a href="${item.url}" target="_blank"><img src="${item.thumbnail_url}" alt="${item.title}"></a>`;
-        } else {
-          media = `<iframe src="${item.url}" frameborder="0" allowfullscreen></iframe>`;
-        }
-      } else {
-        media = `<img src="${item.url}" alt="${item.title}">`;
-      }
+      // Handle videos and images
+      const media =
+        item.media_type === "video"
+          ? `<a href="${item.url}" target="_blank"><img src="${item.thumbnail_url || 'https://via.placeholder.com/300x200?text=Video'}" alt="${item.title}"></a>`
+          : `<img src="${item.url}" alt="${item.title}">`;
 
       card.innerHTML = `
         ${media}
@@ -89,7 +83,6 @@ btn.addEventListener("click", async () => {
         <p>${new Date(item.date).toLocaleDateString()}</p>
       `;
 
-      // Modal click (images only)
       if (item.media_type === "image") {
         card.addEventListener("click", () => {
           document.getElementById("modalImage").src = item.hdurl || item.url;
@@ -103,12 +96,12 @@ btn.addEventListener("click", async () => {
       gallery.appendChild(card);
     });
   } catch (err) {
-    console.error("Error fetching NASA data:", err);
-    gallery.innerHTML = `<p>❌ Error loading data. Please try again later.</p>`;
+    gallery.innerHTML = `<p>❌ Error fetching data.</p>`;
+    console.error(err);
   }
 });
 
-// 🗓 Auto-fill default last 9 days
+// Default date range: last 9 days
 window.addEventListener("load", () => {
   const today = new Date();
   const past = new Date();
