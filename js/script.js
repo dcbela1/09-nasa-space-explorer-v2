@@ -109,3 +109,4 @@ window.addEventListener("load", () => {
   startDate.value = past.toISOString().split("T")[0];
   endDate.value = today.toISOString().split("T")[0];
 });
+ 
