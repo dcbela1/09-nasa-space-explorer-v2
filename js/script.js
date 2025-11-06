@@ -1,32 +1,11 @@
-// NASA Space Explorer App
-// Uses class-provided JSON feed (no API key)
-
+// NASA Space Explorer App (JSON Edition)
+const apodData = "https://cdn.jsdelivr.net/gh/GCA-Classroom/apod/data.json";
 const gallery = document.getElementById("gallery");
 const btn = document.getElementById("getImageBtn");
 const startDate = document.getElementById("startDate");
 const endDate = document.getElementById("endDate");
 
-const apodData = "https://cdn.jsdelivr.net/gh/GCA-Classroom/apod/data.json";
-
-// Random Fact
-const facts = [
-  "Venus spins backward compared to most planets.",
-  "One day on Mercury lasts 1,408 hours.",
-  "Neutron stars can spin 600 times per second.",
-  "There are more stars in the universe than grains of sand on Earth.",
-  "Saturn could float in water because it’s so light.",
-  "The Sun makes up 99.86% of the solar system’s mass.",
-  "A day on Venus is longer than a year on Venus."
-];
-
-document.querySelector(".filters").insertAdjacentHTML(
-  "beforebegin",
-  `<div class="random-fact"><p>💫 Did you know? ${
-    facts[Math.floor(Math.random() * facts.length)]
-  }</p></div>`
-);
-
-// Modal
+// Modal setup
 const modal = document.createElement("div");
 modal.className = "modal";
 modal.innerHTML = `
@@ -43,10 +22,9 @@ const closeModal = () => (modal.style.display = "none");
 modal.querySelector(".close-btn").addEventListener("click", closeModal);
 window.addEventListener("click", e => { if (e.target === modal) closeModal(); });
 
-// Fetch Data
+// Fetch and render
 btn.addEventListener("click", async () => {
-  gallery.innerHTML = `<div class="placeholder"><p>🔄 Loading space photos...</p></div>`;
-
+  gallery.innerHTML = `<p style="text-align:center;">🔄 Loading space photos...</p>`;
   try {
     const res = await fetch(apodData);
     const data = await res.json();
@@ -54,7 +32,6 @@ btn.addEventListener("click", async () => {
     const start = new Date(startDate.value);
     const end = new Date(endDate.value);
 
-    // Filter data
     const filtered = data.filter(item => {
       const d = new Date(item.date);
       return d >= start && d <= end;
@@ -62,20 +39,13 @@ btn.addEventListener("click", async () => {
 
     gallery.innerHTML = "";
 
-    if (filtered.length === 0) {
-      gallery.innerHTML = `<p>No results for that date range. Try again.</p>`;
-      return;
-    }
-
     filtered.forEach(item => {
       const card = document.createElement("div");
       card.className = "gallery-item";
 
-      // Handle videos and images
-      const media =
-        item.media_type === "video"
-          ? `<a href="${item.url}" target="_blank"><img src="${item.thumbnail_url || 'https://via.placeholder.com/300x200?text=Video'}" alt="${item.title}"></a>`
-          : `<img src="${item.url}" alt="${item.title}">`;
+      const media = item.media_type === "video"
+        ? `<a href="${item.url}" target="_blank"><img src="${item.thumbnail_url || 'https://via.placeholder.com/300x200?text=Video'}"></a>`
+        : `<img src="${item.url}" alt="${item.title}">`;
 
       card.innerHTML = `
         ${media}
@@ -96,12 +66,11 @@ btn.addEventListener("click", async () => {
       gallery.appendChild(card);
     });
   } catch (err) {
-    gallery.innerHTML = `<p>❌ Error fetching data.</p>`;
-    console.error(err);
+    gallery.innerHTML = `<p>❌ Error loading data.</p>`;
   }
 });
 
-// Default date range: last 9 days
+// Auto-fill last 9 days
 window.addEventListener("load", () => {
   const today = new Date();
   const past = new Date();
@@ -109,4 +78,3 @@ window.addEventListener("load", () => {
   startDate.value = past.toISOString().split("T")[0];
   endDate.value = today.toISOString().split("T")[0];
 });
- 
