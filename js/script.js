@@ -1,5 +1,5 @@
 // NASA Space Explorer App (JSON Edition)
-const apodData = "https://cdn.jsdelivr.net/gh/GCA-Classroom/apod/data.json";
+const apodData = "./data.json";
 const gallery = document.getElementById("gallery");
 const btn = document.getElementById("getImageBtn");
 const startDate = document.getElementById("startDate");
