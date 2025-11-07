@@ -1,11 +1,14 @@
-// NASA Space Explorer App (JSON Edition)
-const apodData = "https://cdn.jsdelivr.net/gh/GCA-Classroom/apod/data.json";
+// NASA Space Explorer App (Live API Edition)
+// Author: Michael Hines
+// Fetches real data from NASA's APOD API using your personal key
+
+const API_KEY = "7VFSMyl2p3bYgsTg3IHJFGmhoTvoEDGuhl8iDxj1";
 const gallery = document.getElementById("gallery");
 const btn = document.getElementById("getImageBtn");
 const startDate = document.getElementById("startDate");
 const endDate = document.getElementById("endDate");
 
-// Modal setup
+// 🌌 Modal setup
 const modal = document.createElement("div");
 modal.className = "modal";
 modal.innerHTML = `
@@ -18,34 +21,52 @@ modal.innerHTML = `
   </div>
 `;
 document.body.appendChild(modal);
+
 const closeModal = () => (modal.style.display = "none");
 modal.querySelector(".close-btn").addEventListener("click", closeModal);
 window.addEventListener("click", e => { if (e.target === modal) closeModal(); });
 
-// Fetch and render
+// 🚀 Fetch NASA APOD data
 btn.addEventListener("click", async () => {
   gallery.innerHTML = `<p style="text-align:center;">🔄 Loading space photos...</p>`;
+
+  const start = startDate.value;
+  const end = endDate.value;
+
+  if (!start || !end) {
+    gallery.innerHTML = `<p>Please select a start and end date first.</p>`;
+    return;
+  }
+
+  // Build NASA API request URL
+  const url = `https://api.nasa.gov/planetary/apod?start_date=${start}&end_date=${end}&api_key=${API_KEY}`;
+
   try {
-    const res = await fetch(apodData);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Network response was not ok");
     const data = await res.json();
-
-    const start = new Date(startDate.value);
-    const end = new Date(endDate.value);
-
-    const filtered = data.filter(item => {
-      const d = new Date(item.date);
-      return d >= start && d <= end;
-    }).slice(0, 9);
 
     gallery.innerHTML = "";
 
-    filtered.forEach(item => {
+    if (!Array.isArray(data) || data.length === 0) {
+      gallery.innerHTML = `<p>No images found for that date range.</p>`;
+      return;
+    }
+
+    // Show up to 9 results
+    const results = data.slice(0, 9);
+
+    results.forEach(item => {
       const card = document.createElement("div");
       card.className = "gallery-item";
 
-      const media = item.media_type === "video"
-        ? `<a href="${item.url}" target="_blank"><img src="${item.thumbnail_url || 'https://via.placeholder.com/300x200?text=Video'}"></a>`
-        : `<img src="${item.url}" alt="${item.title}">`;
+      // Handle videos and images
+      const media =
+        item.media_type === "video"
+          ? `<a href="${item.url}" target="_blank">
+               <img src="${item.thumbnail_url || 'https://via.placeholder.com/300x200?text=Video'}" alt="${item.title}">
+             </a>`
+          : `<img src="${item.url}" alt="${item.title}">`;
 
       card.innerHTML = `
         ${media}
@@ -53,6 +74,7 @@ btn.addEventListener("click", async () => {
         <p>${new Date(item.date).toLocaleDateString()}</p>
       `;
 
+      // Click to open modal (only for images)
       if (item.media_type === "image") {
         card.addEventListener("click", () => {
           document.getElementById("modalImage").src = item.hdurl || item.url;
@@ -66,11 +88,12 @@ btn.addEventListener("click", async () => {
       gallery.appendChild(card);
     });
   } catch (err) {
-    gallery.innerHTML = `<p>❌ Error loading data.</p>`;
+    console.error("❌ Error fetching data:", err);
+    gallery.innerHTML = `<p>⚠️ Unable to load NASA data. Please try again later.</p>`;
   }
 });
 
-// Auto-fill last 9 days
+// 🗓 Auto-fill default last 9 days on load
 window.addEventListener("load", () => {
   const today = new Date();
   const past = new Date();
